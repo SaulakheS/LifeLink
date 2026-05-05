@@ -1,0 +1,467 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIFELINK DASHBOARDS — Donor & Hospital
+   Consistent with Auth.css theme
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+
+/* ── PAGE WRAPPER ────────────────────────────────────────────────────────── */
+.dash-page {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(192, 57, 43, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(44, 62, 80, 0.10) 0%, transparent 50%),
+    #f0f2f5;
+}
+
+/* ── HEADER ──────────────────────────────────────────────────────────────── */
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #c0392b 0%, #922b21 100%);
+  color: #fff;
+  padding: 16px 22px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(192, 57, 43, 0.35);
+}
+
+.dash-header-hospital {
+  background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+  box-shadow: 0 4px 20px rgba(44, 62, 80, 0.35);
+}
+
+.dash-header-left h2 {
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.dash-header-left p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  opacity: 0.78;
+  font-weight: 400;
+}
+
+.dash-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-badge {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.dash-logout-btn {
+  padding: 7px 16px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.45);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s, border 0.2s;
+}
+
+.dash-logout-btn:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.7);
+}
+
+.dash-logout-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── TABS ────────────────────────────────────────────────────────────────── */
+.dash-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.dash-tab {
+  flex: 1;
+  padding: 11px 10px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.dash-tab:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+}
+
+.dash-tab-active {
+  background: linear-gradient(135deg, #c0392b, #922b21);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.30);
+}
+
+.dash-tab-active-hospital {
+  background: linear-gradient(135deg, #2c3e50, #1a252f);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(44, 62, 80, 0.30);
+}
+
+.dash-tab-active:hover,
+.dash-tab-active-hospital:hover {
+  color: #fff;
+  border-color: transparent;
+}
+
+.dash-tab-badge {
+  background: #fff;
+  color: #c0392b;
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dash-tab-active .dash-tab-badge {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+/* ── CARD (SOS form, info) ───────────────────────────────────────────────── */
+.dash-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.dash-card-title {
+  margin: 0 0 6px;
+  color: #c0392b;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Playfair Display', serif;
+}
+
+.dash-location-note {
+  font-size: 12px;
+  color: #777;
+  margin: 0 0 14px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* ── FORM ELEMENTS ───────────────────────────────────────────────────────── */
+.dash-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  margin: 14px 0 5px;
+}
+
+.dash-select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 9px;
+  border: 1px solid #ddd;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #333;
+  background: #fafafa;
+  box-sizing: border-box;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+}
+
+.dash-select:focus {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 3px rgba(192,57,43,0.10);
+  background: #fff;
+}
+
+/* ── BUTTONS ─────────────────────────────────────────────────────────────── */
+.dash-sos-btn {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 60%, #a93226 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 14px;
+  box-shadow: 0 4px 16px rgba(192,57,43,0.35);
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-sos-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 0.4s;
+}
+
+.dash-sos-btn:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 8px 22px rgba(192,57,43,0.40); }
+.dash-sos-btn:hover::after { left: 140%; }
+.dash-sos-btn:active { transform: translateY(0); filter: brightness(0.96); }
+.dash-sos-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; filter: none; box-shadow: none; }
+
+.dash-gps-btn {
+  padding: 8px 16px;
+  background: rgba(52,152,219,0.10);
+  border: 1px solid rgba(52,152,219,0.35);
+  color: #2980b9;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  transition: background 0.2s;
+}
+
+.dash-gps-btn:hover { background: rgba(52,152,219,0.18); }
+
+/* ── EMPTY STATE ─────────────────────────────────────────────────────────── */
+.dash-empty {
+  text-align: center;
+  padding: 44px 20px;
+  border: 1.5px dashed #ddd;
+  border-radius: 14px;
+  background: #fafafa;
+  color: #aaa;
+}
+
+.dash-empty-icon { font-size: 36px; margin-bottom: 8px; }
+.dash-empty p { margin: 0; font-size: 14px; }
+
+/* ── SOS STATUS CARD ─────────────────────────────────────────────────────── */
+.dash-status-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.dash-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.dash-status-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-blood-badge {
+  background: #fadbd8;
+  color: #c0392b;
+  padding: 3px 11px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dash-donor-count {
+  font-size: 12px;
+  color: #888;
+}
+
+.dash-time {
+  font-size: 11px;
+  color: #bbb;
+}
+
+/* ── RESOLVED BANNER ─────────────────────────────────────────────────────── */
+.dash-resolved-banner {
+  padding: 9px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* ── TIMELINE ────────────────────────────────────────────────────────────── */
+.dash-timeline { display: flex; flex-direction: column; gap: 8px; }
+
+.dash-timeline-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.dash-timeline-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.dash-timeline-content { flex: 1; }
+.dash-timeline-label { font-size: 11px; font-weight: 700; display: block; }
+.dash-timeline-msg { margin: 2px 0 1px; font-size: 13px; color: #444; }
+.dash-timeline-time { font-size: 11px; color: #bbb; }
+
+/* ── HISTORY CARD ────────────────────────────────────────────────────────── */
+.dash-history-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.dash-status-chip {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dash-hospital-name { margin: 4px 0 2px; font-size: 13px; font-weight: 500; color: #333; }
+.dash-hospital-addr { margin: 2px 0; font-size: 12px; color: #999; }
+.dash-response-time { margin: 4px 0 0; font-size: 11px; color: #bbb; }
+
+/* ── DONOR RESPONSE ROW ──────────────────────────────────────────────────── */
+.dash-response-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.dash-response-icon { font-size: 16px; }
+.dash-response-name { font-size: 13px; font-weight: 600; color: #333; }
+.dash-response-status { font-size: 11px; font-weight: 600; margin-left: 6px; }
+.dash-response-time-sm { font-size: 11px; color: #bbb; margin-left: auto; }
+
+/* ── NOTIFICATION CARD (Donor SOS alert) ─────────────────────────────────── */
+.notif-card {
+  background: #fff;
+  border: 1px solid #f5c6cb;
+  border-left: 4px solid #c0392b;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 16px rgba(192,57,43,0.10);
+  animation: notif-enter 0.3s ease both;
+}
+
+@keyframes notif-enter {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.notif-title { margin: 0 0 10px; color: #c0392b; font-size: 15px; font-weight: 700; }
+.notif-info  { margin: 4px 0; font-size: 14px; color: #333; }
+.notif-timer { margin: 6px 0; font-size: 13px; color: #666; }
+
+.notif-btn-row { display: flex; gap: 10px; margin-top: 12px; }
+
+.notif-accept-btn {
+  flex: 1;
+  padding: 10px;
+  background: linear-gradient(135deg, #27ae60, #1e8449);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 3px 10px rgba(39,174,96,0.30);
+  transition: filter 0.15s, transform 0.15s;
+}
+
+.notif-reject-btn {
+  flex: 1;
+  padding: 10px;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 3px 10px rgba(192,57,43,0.30);
+  transition: filter 0.15s, transform 0.15s;
+}
+
+.notif-accept-btn:hover, .notif-reject-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.notif-accept-btn:disabled, .notif-reject-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: none; }
+
+.notif-status { font-weight: 700; margin-top: 8px; font-size: 14px; }
+.notif-expired { color: #aaa; font-size: 13px; margin-top: 8px; }
+
+/* ── OUTCOME BADGE ───────────────────────────────────────────────────────── */
+.dash-outcome-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .dash-page { padding: 12px 10px 30px; }
+  .dash-header { padding: 14px 16px; border-radius: 12px; }
+  .dash-header-left h2 { font-size: 16px; }
+  .dash-tab { font-size: 13px; padding: 9px 6px; }
+  .dash-card { padding: 16px; }
+  .dash-sos-btn { font-size: 15px; padding: 12px; }
+}

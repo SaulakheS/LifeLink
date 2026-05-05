@@ -1,0 +1,25 @@
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<h2>Socket Test</h2>
+<div id="notifications"></div>
+
+<script>
+  const socket = io("http://localhost:5000");
+
+  socket.on("connect", () => {
+    console.log("✅ Connected:", socket.id);
+  });
+
+  socket.on("new_sos", (data) => {
+    console.log("🚨 SOS RECEIVED:", data);
+
+    // Add to page dynamically
+    const div = document.getElementById("notifications");
+
+    const msg = document.createElement("p");
+    msg.style.color = "red";
+    msg.innerText = "🚨 SOS for " + data.blood_group;
+
+    div.appendChild(msg);
+  });
+</script>
