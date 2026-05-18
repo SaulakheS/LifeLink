@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { io } from "socket.io-client";
 import Notification from "../components/Notification";
+import CertificatePreview from "../components/CertificatePreview";
 import { useNavigate } from "react-router-dom";
 import API_BASE from "../config";
 import "./Dashboard.css";
@@ -16,7 +17,10 @@ export default function Dashboard() {
   const [donorName, setDonorName]           = useState("");
   const [history, setHistory]               = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [certificates, setCertificates]     = useState([]);
+  const [certsLoading, setCertsLoading]     = useState(true);
   const [activeTab, setActiveTab]           = useState("live");
+  const [previewCert, setPreviewCert]       = useState(null);
   const navigate = useNavigate();
 
   const logout = async () => {
@@ -49,12 +53,29 @@ export default function Dashboard() {
     }
   }, []);
 
+  const fetchCertificates = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    try {
+      setCertsLoading(true);
+      const res = await fetch(`${API_BASE}/certificates/my`, {
+        headers: { "Authorization": token },
+      });
+      const data = await res.json();
+      if (res.ok) setCertificates(data);
+    } catch (err) {
+      console.error("Certificates fetch error:", err);
+    } finally {
+      setCertsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     const donorId = localStorage.getItem("donor_id");
     const name    = localStorage.getItem("donor_name");
     if (!donorId) { navigate("/"); return; }
     setDonorName(name);
     fetchHistory();
+    fetchCertificates();
 
     const socket = io(API_BASE);
     socket.emit("join", `donor_${donorId}`);
@@ -76,15 +97,22 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (activeTab === "history") fetchHistory();
-  }, [activeTab, fetchHistory]);
+    if (activeTab === "certificates") fetchCertificates();
+  }, [activeTab, fetchHistory, fetchCertificates]);
 
   const dismissMessage = (request_id) => {
     setMessages((prev) => prev.filter((m) => m.request_id !== request_id));
     fetchHistory();
+    fetchCertificates();
   };
 
   return (
     <div className="dash-page">
+
+      {/* CERTIFICATE PREVIEW MODAL */}
+      {previewCert && (
+        <CertificatePreview cert={previewCert} onClose={() => setPreviewCert(null)} />
+      )}
 
       {/* ── HEADER ──────────────────────────────────────────────────────── */}
       <div className="dash-header">
@@ -95,6 +123,11 @@ export default function Dashboard() {
         <div className="dash-header-right">
           {messages.length > 0 && (
             <div className="dash-badge">🔔 {messages.length}</div>
+          )}
+          {certificates.length > 0 && (
+            <div className="dash-badge" style={{ background: "#f39c12", color: "#fff" }}>
+              🏅 {certificates.length}
+            </div>
           )}
           <button className="dash-logout-btn" onClick={logout}>Logout</button>
         </div>
@@ -107,15 +140,24 @@ export default function Dashboard() {
           onClick={() => setActiveTab("live")}
         >
           🚨 Live SOS
-          {messages.length > 0 && (
-            <span className="dash-tab-badge">{messages.length}</span>
-          )}
+          {messages.length > 0 && <span className="dash-tab-badge">{messages.length}</span>}
         </button>
         <button
           className={`dash-tab ${activeTab === "history" ? "dash-tab-active" : ""}`}
           onClick={() => setActiveTab("history")}
         >
-          📋 My History
+          📋 History
+        </button>
+        <button
+          className={`dash-tab ${activeTab === "certificates" ? "dash-tab-active" : ""}`}
+          onClick={() => setActiveTab("certificates")}
+        >
+          🏅 Certificates
+          {certificates.length > 0 && (
+            <span className="dash-tab-badge" style={{ background: "#f39c12" }}>
+              {certificates.length}
+            </span>
+          )}
         </button>
       </div>
 
@@ -129,8 +171,6 @@ export default function Dashboard() {
             </div>
           ) : (
             messages.map((msg) => (
-              // FIX: key={msg.request_id} not key={i} — prevents wrong
-              // component re-render when a middle card is removed
               <Notification
                 key={msg.request_id}
                 data={msg}
@@ -155,12 +195,8 @@ export default function Dashboard() {
             history.map((item) => {
               const cfg = RESPONSE_CONFIG[item.response_status] || RESPONSE_CONFIG.NOT_RESPONDED;
               return (
-                // FIX: key={item.request_id} not key={i}
-                <div
-                  key={item.request_id}
-                  className="dash-history-card"
-                  style={{ borderLeft: `4px solid ${cfg.color}` }}
-                >
+                <div key={item.request_id} className="dash-history-card"
+                  style={{ borderLeft: `4px solid ${cfg.color}` }}>
                   <div className="dash-status-header">
                     <div className="dash-status-left">
                       <span className="dash-blood-badge">🩸 {item.blood_group}</span>
@@ -188,6 +224,69 @@ export default function Dashboard() {
           )}
         </div>
       )}
+
+      {/* ── CERTIFICATES TAB ────────────────────────────────────────────── */}
+      {activeTab === "certificates" && (
+        <div>
+          {certsLoading ? (
+            <div className="dash-empty"><p>Loading certificates...</p></div>
+          ) : certificates.length === 0 ? (
+            <div className="dash-empty">
+              <div className="dash-empty-icon">🏅</div>
+              <p>No certificates yet</p>
+              <p style={{ fontSize: "12px", color: "#bbb", marginTop: "6px" }}>
+                Certificates are issued by hospitals after you donate blood
+              </p>
+            </div>
+          ) : (
+            certificates.map((cert) => (
+              <div key={cert.certificate_id} style={certCard}>
+                <div style={certAccentBar} />
+                <div style={certBody}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                      <span style={certBadgeStyle}>🏅 Certificate</span>
+                      <span style={certBloodBadge}>🩸 {cert.blood_group}</span>
+                    </div>
+                    <p style={certHospital}>🏥 {cert.hospital_name}</p>
+                    {cert.hospital_address && (
+                      <p style={certAddr}>📍 {cert.hospital_address}</p>
+                    )}
+                    <p style={certDate}>
+                      Issued: {new Date(cert.issued_at).toLocaleDateString("en-IN", {
+                        day: "numeric", month: "long", year: "numeric",
+                      })}
+                    </p>
+                    <p style={certTokenStyle}>
+                      ID: {cert.certificate_token?.slice(0, 18)}...
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <button style={viewBtn} onClick={() => setPreviewCert(cert)}>
+                      👁 View
+                    </button>
+                    <button style={saveBtn} onClick={() => setPreviewCert(cert)}>
+                      ⬇ Save
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
+const certCard       = { background: "#fff", border: "1px solid #e8e8e8", borderRadius: "12px", marginBottom: "12px", overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" };
+const certAccentBar  = { height: "5px", background: "linear-gradient(90deg, #f39c12, #e67e22, #f39c12)" };
+const certBody       = { padding: "14px 16px", display: "flex", gap: "12px", alignItems: "flex-start" };
+const certBadgeStyle = { background: "#fef9e7", color: "#e67e22", border: "1px solid #f9ca8e", borderRadius: "20px", padding: "3px 10px", fontSize: "12px", fontWeight: 600 };
+const certBloodBadge = { background: "#fadbd8", color: "#c0392b", borderRadius: "20px", padding: "3px 10px", fontSize: "12px", fontWeight: 600 };
+const certHospital   = { margin: 0, fontSize: "14px", fontWeight: 600, color: "#2c3e50" };
+const certAddr       = { margin: "3px 0 0", fontSize: "12px", color: "#888" };
+const certDate       = { margin: "4px 0 0", fontSize: "12px", color: "#666" };
+const certTokenStyle = { margin: "3px 0 0", fontSize: "10px", color: "#bbb", fontFamily: "monospace" };
+const viewBtn        = { padding: "7px 14px", background: "#2c3e50", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "12px", fontWeight: 600 };
+const saveBtn        = { padding: "7px 14px", background: "linear-gradient(135deg,#f39c12,#e67e22)", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "12px", fontWeight: 600 };

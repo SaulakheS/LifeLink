@@ -12,6 +12,7 @@ import responseRoutes from "./routes/responses.js";
 import donorRoutes from "./routes/donors.js";
 import authRoutes from "./routes/auth.js";
 import donationRoutes from "./routes/donation.js";
+import certificateRoutes from "./routes/certificates.js";
 import { verifyToken } from "./middleware/authMiddleware.js";
 import { startDonorResetCron, runResetNow } from "./utils/resetDonorAvailability.js";
 
@@ -33,12 +34,10 @@ app.use(helmet({
     },
   },
 }));
-
 app.use(cors({ origin: process.env.CLIENT_ORIGIN }));
 app.use(express.json());
 
-// FIX: Rate limit ONLY login and register — not profile/settings endpoints
-// Profile is fetched every time menu opens — 20/15min would lock hospitals out
+// Rate limit only login/register — not profile or certificates
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -47,28 +46,28 @@ const authLimiter = rateLimit({
 
 // ─── ROUTES ───────────────────────────────────────────────────────────────────
 
-// Auth — login/register are rate limited, profile/settings are not
+// Auth — login/register rate limited
 app.post("/auth/login",             authLimiter, authRoutes);
 app.post("/auth/logout",            authRoutes);
 app.post("/auth/register-hospital", authLimiter, authRoutes);
 app.post("/auth/register-donor",    authLimiter, authRoutes);
-
-// Hospital profile & settings — protected by verifyToken inside auth.js, no rate limit
+// Hospital profile/settings — verifyToken applied inside auth.js
 app.use("/auth", authRoutes);
 
-// All other protected routes
-app.use("/donors",   verifyToken, donorRoutes);
-app.use("/requests", verifyToken, requestRoutes);
-app.use("/responses", verifyToken, responseRoutes);
-app.use("/donation",  verifyToken, donationRoutes);
+// Certificate verify is PUBLIC — no token needed (for QR scanning etc.)
+app.get("/certificates/verify/:token", certificateRoutes);
 
-// ─── MANUAL RESET TRIGGER ─────────────────────────────────────────────────────
+// All other routes — protected
+app.use("/donors",       verifyToken, donorRoutes);
+app.use("/requests",     verifyToken, requestRoutes);
+app.use("/responses",    verifyToken, responseRoutes);
+app.use("/donation",     verifyToken, donationRoutes);
+app.use("/certificates", verifyToken, certificateRoutes);
+
+// ─── MANUAL RESET TRIGGER (dev/admin) ─────────────────────────────────────────
 app.post("/admin/reset-donors", verifyToken, async (req, res) => {
   const updated = await runResetNow();
-  res.json({
-    message: `Reset complete. ${updated.length} donor(s) made available.`,
-    donors: updated,
-  });
+  res.json({ message: `Reset complete. ${updated.length} donor(s) made available.`, donors: updated });
 });
 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
@@ -77,13 +76,8 @@ app.get("/", (req, res) => res.send("LifeLink Backend Running 🚀"));
 // ─── SOCKET LOGIC ─────────────────────────────────────────────────────────────
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
-  socket.on("join", (room) => {
-    socket.join(room);
-    console.log("Joined room:", room);
-  });
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
-  });
+  socket.on("join", (room) => { socket.join(room); console.log("Joined room:", room); });
+  socket.on("disconnect", () => { console.log("User disconnected:", socket.id); });
 });
 
 // ─── DB TEST ──────────────────────────────────────────────────────────────────
@@ -97,6 +91,4 @@ startDonorResetCron();
 
 // ─── START SERVER ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

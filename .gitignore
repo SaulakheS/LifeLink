@@ -1,4 +1,32 @@
-.env
+# dependencies
 node_modules/
+
+# env files
+.env
+
+# logs
+logs
+*.log
+
+# build
 build/
 dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# vscode
+.vscode/
+
+# docker
+postgres-data/
+
+# cache
+.cache/
+
+# frontend build
+frontend/build/
+
+# backend uploads
+backend/uploads/
