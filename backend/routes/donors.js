@@ -54,7 +54,10 @@ router.post("/make-available", async (req, res) => {
 
 // ─── DONOR HISTORY ────────────────────────────────────────────────────────────
 router.get("/history", async (req, res) => {
-  const donor_id = req.user.id;
+  const donor_id = Number(req.user.id);
+  if (!donor_id) {
+    return res.status(401).json({ message: "Invalid donor session" });
+  }
   try {
     const result = await pool.query(
       `SELECT
@@ -67,18 +70,11 @@ router.get("/history", async (req, res) => {
          rr.response_status,
          rr.response_time,
          rr.attempt_order
-       FROM emergency_requests er
+       FROM request_responses rr
+       JOIN emergency_requests er ON er.request_id = rr.request_id
        JOIN hospitals h ON er.hospital_id = h.hospital_id
-       LEFT JOIN request_responses rr
-         ON rr.request_id = er.request_id
-         AND rr.donor_id = $1
-       WHERE
-         rr.donor_id = $1
-         OR (
-           er.donor_queue IS NOT NULL
-           AND er.donor_queue @> jsonb_build_array($1::int)
-         )
-       ORDER BY er.created_at DESC
+       WHERE rr.donor_id = $1
+       ORDER BY rr.response_time DESC NULLS LAST, er.created_at DESC
        LIMIT 50`,
       [donor_id]
     );
