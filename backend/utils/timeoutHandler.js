@@ -42,18 +42,6 @@ export const handleTimeout = async (request_id, currentDonorId, io) => {
       return;
     }
 
-    const attempt = await pool.query(
-      `SELECT COUNT(*) FROM request_responses WHERE request_id = $1`,
-      [request_id]
-    );
-    const attempt_order = parseInt(attempt.rows[0].count, 10) + 1;
-    await pool.query(
-      `INSERT INTO request_responses
-         (request_id, donor_id, response_status, response_time, attempt_order)
-       VALUES ($1, $2, 'NOT_RESPONDED', CURRENT_TIMESTAMP, $3)`,
-      [request_id, currentDonorId, attempt_order]
-    );
-
     // Get queue and remove timed-out donor
     const result = await pool.query(
       `SELECT donor_queue FROM emergency_requests WHERE request_id = $1`,

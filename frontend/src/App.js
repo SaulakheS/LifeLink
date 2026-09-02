@@ -6,10 +6,14 @@ import HospitalLogin from "./pages/HospitalLogin";
 import HospitalRegister from "./pages/HospitalRegister";
 import HospitalDashboard from "./pages/HospitalDashboard";
 import Dashboard from "./pages/Dashboard";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 function App() {
   return (
     <Router>
+      <Header />
+
       <Routes>
         {/* Entry point */}
         <Route path="/" element={<SelectRole />} />
@@ -31,6 +35,8 @@ function App() {
         {/* 404 — redirect unknown routes to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      <Footer />
     </Router>
   );
 }

@@ -9,7 +9,6 @@ export const verifyToken = (req, res, next) => {
     return res.status(401).json({ message: "Access denied. No token provided." });
   }
 
-  // Reject tokens explicitly logged out before they expired
   if (tokenBlacklist.has(token)) {
     return res.status(401).json({ message: "Session ended. Please log in again." });
   }

@@ -4,92 +4,61 @@ export default function SelectRole() {
   const navigate = useNavigate();
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.appName}>🩸 LifeLink</h1>
-      <p style={styles.tagline}>Emergency Blood Donation Network</p>
+    <div className="role-page">
+      <div className="role-container">
 
-      {/* ── DONOR SECTION ──────────────────────────────────── */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>👤 Donor</h3>
-        <div style={styles.btnRow}>
-          <div style={styles.card} onClick={() => navigate("/donor-login")}>
-            <p style={styles.cardLabel}>Login</p>
+        {/* Logo */}
+        <div className="role-logo">🩸</div>
+
+        {/* App name */}
+        <h1 className="role-app-name">
+          Life<span>Link</span>
+        </h1>
+
+        <p className="role-tagline">
+          Emergency Blood Donation Network
+        </p>
+
+        <div className="role-divider" />
+
+        {/* ── DONOR ──────────────────────────────────────────────── */}
+        <p className="role-section-label">👤 Donor</p>
+        <div className="role-btn-row" style={{ marginBottom: "24px" }}>
+          <div className="role-card" onClick={() => navigate("/donor-login")}>
+            <span className="role-card-icon">🩸</span>
+            <span className="role-card-label">Login</span>
+            <span className="role-card-sub">Respond to SOS alerts</span>
           </div>
         </div>
-      </div>
 
-      {/* ── HOSPITAL SECTION ───────────────────────────────── */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>🏥 Hospital</h3>
-        <div style={styles.btnRow}>
-          <div style={styles.card} onClick={() => navigate("/hospital-login")}>
-            <p style={styles.cardLabel}>Login</p>
+        <div className="role-divider" />
+
+        {/* ── HOSPITAL ───────────────────────────────────────────── */}
+        <p className="role-section-label">🏥 Hospital</p>
+        <div className="role-btn-row">
+          <div className="role-card" onClick={() => navigate("/hospital-login")}>
+            <span className="role-card-icon">🏥</span>
+            <span className="role-card-label">Login</span>
+            <span className="role-card-sub">Send emergency SOS</span>
           </div>
-          <div
-            style={{ ...styles.card, ...styles.cardOutline }}
-            onClick={() => navigate("/hospital-register")}
-          >
-            <p style={styles.cardLabel}>Register</p>
-          </div>
+          {/* <div className="role-card role-card-outline" onClick={() => navigate("/hospital-register")}>
+            <span className="role-card-icon">📋</span>
+            <span className="role-card-label">Register</span>
+            <span className="role-card-sub">New hospital account</span>
+          </div> */}
         </div>
+
+        {/* ── HEALTH AWARENESS STRIP ─────────────────────────────── */}
+        <div className="role-health-strip">
+          <span className="role-health-icon">❤️</span>
+          <p className="role-health-text">
+            <strong>One donation saves up to 3 lives.</strong>{" "}<br></br>
+            Eligible donors can give blood every 90 days (male) or 120 days (female).
+            Be a hero — register today.
+          </p>
+        </div>
+
       </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "#f4f6f9",
-    gap: "20px",
-    padding: "20px",
-  },
-  appName: {
-    fontSize: "36px",
-    color: "#c0392b",
-    margin: 0,
-  },
-  tagline: {
-    color: "#888",
-    margin: "0 0 10px",
-    fontSize: "14px",
-  },
-  section: {
-    textAlign: "center",
-  },
-  sectionTitle: {
-    color: "#2c3e50",
-    margin: "0 0 10px",
-  },
-  btnRow: {
-    display: "flex",
-    gap: "14px",
-    justifyContent: "center",
-  },
-  card: {
-    width: "130px",
-    padding: "18px 10px",
-    background: "#fff",
-    borderRadius: "12px",
-    textAlign: "center",
-    cursor: "pointer",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-    border: "2px solid transparent",
-    transition: "0.2s",
-  },
-  cardOutline: {
-    border: "2px solid #2c3e50",
-    background: "transparent",
-    boxShadow: "none",
-  },
-  cardLabel: {
-    margin: 0,
-    fontWeight: 600,
-    color: "#2c3e50",
-    fontSize: "15px",
-  },
-};

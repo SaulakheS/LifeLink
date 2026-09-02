@@ -7,9 +7,9 @@ import API_BASE from "../config";
 import "./Dashboard.css";
 
 const RESPONSE_CONFIG = {
-  ACCEPTED:      { color: "#27ae60", bg: "#eafaf1", icon: "✅", label: "Accepted"      },
-  REJECTED:      { color: "#e67e22", bg: "#fef9e7", icon: "↩️", label: "Declined"      },
-  NOT_RESPONDED: { color: "#7f8c8d", bg: "#f2f3f4", icon: "⏱",  label: "Not Responded" },
+  ACCEPTED:      { color: "#27ae60", bg: "rgba(39,174,96,0.15)",   icon: "✅", label: "Accepted"      },
+  REJECTED:      { color: "#e67e22", bg: "rgba(230,126,34,0.15)",  icon: "↩️", label: "Declined"      },
+  NOT_RESPONDED: { color: "#7f8c8d", bg: "rgba(127,140,141,0.15)", icon: "⏱",  label: "Not Responded" },
 };
 
 export default function Dashboard() {
@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [certsLoading, setCertsLoading]     = useState(true);
   const [activeTab, setActiveTab]           = useState("live");
   const [previewCert, setPreviewCert]       = useState(null);
+  const [socketError, setSocketError]       = useState(null);
   const navigate = useNavigate();
 
   const logout = async () => {
@@ -38,15 +39,11 @@ export default function Dashboard() {
     const token = localStorage.getItem("token");
     try {
       setHistoryLoading(true);
-      setHistory([]);
       const res = await fetch(`${API_BASE}/donors/history`, { headers: { "Authorization": token } });
       const data = await res.json();
-      if (res.ok) setHistory(Array.isArray(data) ? data : []);
-      else setHistory([]);
-    } catch (err) {
-      console.error("History error:", err);
-      setHistory([]);
-    } finally { setHistoryLoading(false); }
+      if (res.ok) setHistory(data);
+    } catch (err) { console.error("History error:", err); }
+    finally { setHistoryLoading(false); }
   }, []);
 
   const fetchCertificates = useCallback(async () => {
@@ -63,20 +60,48 @@ export default function Dashboard() {
   useEffect(() => {
     const donorId = localStorage.getItem("donor_id");
     const name    = localStorage.getItem("donor_name");
-    if (!donorId) { navigate("/"); return; }
+    const token   = localStorage.getItem("token");
+    if (!donorId || !token) { navigate("/"); return; }
     setDonorName(name);
     fetchHistory();
     fetchCertificates();
 
-    const socket = io(API_BASE);
-    socket.emit("join", `donor_${donorId}`);
+    const socket = io(API_BASE, { auth: { token } });
+
+    socket.on("connect", () => {
+      setSocketError(null);
+      socket.emit("join", `donor_${donorId}`);
+    });
+
+    socket.on("connect_error", (err) => {
+      setSocketError(err.message);
+      if (err.message.includes("expired") || err.message.includes("Invalid")) logout();
+    });
+
+    socket.on("auth_error", (data) => {
+      console.error("[Socket] Auth error:", data.message);
+    });
+
     socket.on("new_sos", (data) => {
       new Audio("/alert.mp3").play().catch(() => {});
-      setMessages((prev) => prev.some((m) => m.request_id === data.request_id) ? prev : [...prev, data]);
+      setMessages((prev) => {
+        if (prev.some((m) => m.request_id === data.request_id)) return prev;
+        return [...prev, data];
+      });
     });
+
     socket.on("remove_sos", (data) => {
       setMessages((prev) => prev.filter((m) => m.request_id !== data.request_id));
     });
+
+    // FIX: Handle hospital cancellation
+    // When hospital cancels SOS, remove the card from donor's live view
+    socket.on("sos_cancelled", (data) => {
+      console.log(`[Socket] SOS ${data.request_id} cancelled by hospital`);
+      setMessages((prev) => prev.filter((m) => m.request_id !== data.request_id));
+      // Small toast-like notification could go here if desired
+    });
+
     return () => socket.disconnect();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -95,6 +120,12 @@ export default function Dashboard() {
     <div className="dash-page">
 
       {previewCert && <CertificatePreview cert={previewCert} onClose={() => setPreviewCert(null)} />}
+
+      {socketError && (
+        <div style={{ background: "rgba(231,76,60,0.15)", border: "1px solid rgba(231,76,60,0.30)", borderRadius: "10px", padding: "10px 16px", marginBottom: "12px", fontSize: "13px", color: "#ff7675" }}>
+          ⚠️ Connection issue: {socketError}
+        </div>
+      )}
 
       {/* HEADER */}
       <div className="dash-header">
@@ -128,7 +159,10 @@ export default function Dashboard() {
       {activeTab === "live" && (
         <div>
           {messages.length === 0 ? (
-            <div className="dash-empty"><div className="dash-empty-icon">📭</div><p>No active SOS requests</p></div>
+            <div className="dash-empty">
+              <div className="dash-empty-icon">📭</div>
+              <p>No active SOS requests</p>
+            </div>
           ) : (
             messages.map((msg) => (
               <Notification key={msg.request_id} data={msg} onDismiss={() => dismissMessage(msg.request_id)} />
@@ -152,13 +186,22 @@ export default function Dashboard() {
                   <div className="dash-status-header">
                     <div className="dash-status-left">
                       <span className="dash-blood-badge">🩸 {item.blood_group}</span>
-                      <span className="dash-status-chip" style={{ background: cfg.bg, color: cfg.color }}>{cfg.icon} {cfg.label}</span>
+                      <span className="dash-status-chip" style={{ background: cfg.bg, color: cfg.color }}>
+                        {cfg.icon} {cfg.label}
+                      </span>
                     </div>
-                    <span className="dash-time">{new Date(item.created_at).toLocaleDateString()} {new Date(item.created_at).toLocaleTimeString()}</span>
+                    <span className="dash-time">
+                      {new Date(item.created_at).toLocaleDateString()}{" "}
+                      {new Date(item.created_at).toLocaleTimeString()}
+                    </span>
                   </div>
                   <p className="dash-hospital-name">🏥 {item.hospital_name}</p>
                   {item.hospital_address && <p className="dash-hospital-addr">📍 {item.hospital_address}</p>}
-                  {item.response_time && <p className="dash-response-time">Responded: {new Date(item.response_time).toLocaleTimeString()}</p>}
+                  {item.response_time && (
+                    <p className="dash-response-time">
+                      Responded: {new Date(item.response_time).toLocaleTimeString()}
+                    </p>
+                  )}
                 </div>
               );
             })
@@ -175,7 +218,9 @@ export default function Dashboard() {
             <div className="dash-empty">
               <div className="dash-empty-icon">🏅</div>
               <p>No certificates yet</p>
-              <p style={{ fontSize: "12px", color: "#bbb", marginTop: "6px" }}>Issued by hospitals after you donate</p>
+              <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.28)", marginTop: "6px" }}>
+                Issued by hospitals after you donate
+              </p>
             </div>
           ) : (
             certificates.map((cert) => (
@@ -189,7 +234,11 @@ export default function Dashboard() {
                     </div>
                     <p className="cert-hospital">🏥 {cert.hospital_name}</p>
                     {cert.hospital_address && <p className="cert-addr">📍 {cert.hospital_address}</p>}
-                    <p className="cert-date">Issued: {new Date(cert.issued_at).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</p>
+                    <p className="cert-date">
+                      Issued: {new Date(cert.issued_at).toLocaleDateString("en-IN", {
+                        day: "numeric", month: "long", year: "numeric",
+                      })}
+                    </p>
                     <p className="cert-token">ID: {cert.certificate_token?.slice(0, 18)}...</p>
                   </div>
                   <div className="cert-card-actions">
